@@ -20,7 +20,10 @@ class PluginStorage extends Storage implements \Stringable
     public function executeAll(mixed ...$args): void
     {
         foreach ($this->container as $plugin) {
-            $plugin(...$args);
+            /** @var Plugin $plugin */
+            if ($plugin->isActive()) {
+                $plugin(...$args);
+            }
         }
     }
 }

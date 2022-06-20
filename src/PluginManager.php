@@ -61,7 +61,7 @@ class PluginManager extends Storage
     {
         foreach ($this->container as $storage) {
             /** @var PluginStorage $storage */
-            if ((string) $storage === $updateType) {
+            if ($storage->name === $updateType) {
                 return $storage;
             }
         }

@@ -20,6 +20,11 @@ class Storage implements \Countable, \Iterator
         $this->container->removeAll($this->container);
     }
 
+    public function asArray(): array
+    {
+        return \iterator_to_array($this->container);
+    }
+
     final public function count()  : int   { return $this->container->count()  ; }
     final public function current(): mixed { return $this->container->current(); }
     final public function key()    : mixed { return $this->container->key()    ; }
