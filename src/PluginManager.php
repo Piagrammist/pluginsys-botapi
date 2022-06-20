@@ -3,7 +3,7 @@
 namespace Piagrammist\PluginSys\BotAPI;
 
 
-class PluginManager
+class PluginManager extends Storage
 {
     public const UPDATE_TYPES = [
         'message',
@@ -23,7 +23,6 @@ class PluginManager
     ];
 
     protected string $path;
-    protected array  $container;
 
     public function __construct(string $dir)
     {
@@ -33,6 +32,7 @@ class PluginManager
         if (!\is_dir($dir)) {
             throw new \RuntimeException("Directory '$dir' not found");
         }
+        parent::__construct();
         $this->path = $dir;
         $this->sync();
     }
@@ -42,58 +42,29 @@ class PluginManager
         $this->reset();
         foreach (\glob(path($this->path, '*'), \GLOB_ONLYDIR | \GLOB_NOSORT) as $dir) {
             $dirname = \basename($dir);
-            if ($dirname !== 'any') {
-                // do NOT use 'isset' here!
-                try {
-                    $this->container[$dirname];
-                } catch (\Throwable) {
-                    continue;
-                }
+            if ($dirname !== 'any' || !in_array($dirname, self::UPDATE_TYPES)) {
+                continue;
             }
             $storage = new PluginStorage($dirname);
             foreach (readDirectoryClosures($dir) as $filename => $closure) {
                 /** @var  string  $filename */
                 /** @var \Closure $closure */
-                $storage->attach(new Plugin($filename, $closure));
+                $storage->container->attach(new Plugin($filename, $closure));
             }
             if (\count($storage) > 0) {
-                $this->container[$dirname] = $storage;
+                $this->container->attach($storage);
             }
         }
     }
 
-    public function reset(): void
+    public function get(string $updateType): PluginStorage
     {
-        $this->container = \array_fill_keys(self::UPDATE_TYPES, null);
-    }
-
-    public function iter(): \Generator
-    {
-        foreach ($this->container as $update => $val) {
-            if ($val !== null) {
-                yield $update => $val;
-            }
-        }
-    }
-
-    public function get(string $updateType): ?PluginStorage
-    {
-        foreach ($this->container as $update => $val) {
-            if ($update === $updateType) {
-                return $val;
+        foreach ($this->container as $storage) {
+            /** @var PluginStorage $storage */
+            if ((string) $storage === $updateType) {
+                return $storage;
             }
         }
         throw new \Exception("Invalid update type provided");
-    }
-
-    public function getAll(): array
-    {
-        $copy = $this->container;
-        foreach ($copy as $update => $val) {
-            if ($val === null) {
-                unset($copy[$update]);
-            }
-        }
-        return $copy;
     }
 }
