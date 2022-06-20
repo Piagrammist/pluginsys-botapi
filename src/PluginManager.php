@@ -5,23 +5,25 @@ namespace Piagrammist\PluginSys\BotAPI;
 
 class PluginManager
 {
-    protected string $path;
-    protected array  $updates = [
-        'message'              => null,
-        'edited_message'       => null,
-        'channel_post'         => null,
-        'edited_channel_post'  => null,
-        'inline_query'         => null,
-        'chosen_inline_result' => null,
-        'callback_query'       => null,
-        'shipping_query'       => null,
-        'pre_checkout_query'   => null,
-        'poll'                 => null,
-        'poll_answer'          => null,
-        'my_chat_member'       => null,
-        'chat_member'          => null,
-        'chat_join_request'    => null,
+    public const UPDATE_TYPES = [
+        'message',
+        'edited_message',
+        'channel_post',
+        'edited_channel_post',
+        'inline_query',
+        'chosen_inline_result',
+        'callback_query',
+        'shipping_query',
+        'pre_checkout_query',
+        'poll',
+        'poll_answer',
+        'my_chat_member',
+        'chat_member',
+        'chat_join_request',
     ];
+
+    protected string $path;
+    protected array  $container;
 
     public function __construct(string $dir)
     {
@@ -37,13 +39,16 @@ class PluginManager
 
     public function sync(): void
     {
+        $this->reset();
         foreach (\glob(path($this->path, '*'), \GLOB_ONLYDIR | \GLOB_NOSORT) as $dir) {
             $dirname = \basename($dir);
-            // do NOT use 'isset' here!
-            try {
-                $this->updates[$dirname];
-            } catch (\Throwable) {
-                continue;
+            if ($dirname !== 'any') {
+                // do NOT use 'isset' here!
+                try {
+                    $this->container[$dirname];
+                } catch (\Throwable) {
+                    continue;
+                }
             }
             $storage = new PluginStorage($dirname);
             foreach (readDirectoryClosures($dir) as $filename => $closure) {
@@ -52,14 +57,19 @@ class PluginManager
                 $storage->attach(new Plugin($filename, $closure));
             }
             if (\count($storage) > 0) {
-                $this->updates[$dirname] = $storage;
+                $this->container[$dirname] = $storage;
             }
         }
     }
 
+    public function reset(): void
+    {
+        $this->container = \array_fill_keys(self::UPDATE_TYPES, null);
+    }
+
     public function iter(): \Generator
     {
-        foreach ($this->updates as $update => $val) {
+        foreach ($this->container as $update => $val) {
             if ($val !== null) {
                 yield $update => $val;
             }
@@ -68,7 +78,7 @@ class PluginManager
 
     public function get(string $updateType): ?PluginStorage
     {
-        foreach ($this->updates as $update => $val) {
+        foreach ($this->container as $update => $val) {
             if ($update === $updateType) {
                 return $val;
             }
@@ -78,7 +88,7 @@ class PluginManager
 
     public function getAll(): array
     {
-        $copy = $this->updates;
+        $copy = $this->container;
         foreach ($copy as $update => $val) {
             if ($val === null) {
                 unset($copy[$update]);
