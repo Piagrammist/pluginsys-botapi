@@ -42,7 +42,7 @@ class PluginManager extends Storage
         $this->reset();
         foreach (\glob(path($this->path, '*'), \GLOB_ONLYDIR | \GLOB_NOSORT) as $dir) {
             $dirname = \basename($dir);
-            if ($dirname !== 'any' || !in_array($dirname, self::UPDATE_TYPES)) {
+            if ($dirname !== 'any' && !in_array($dirname, self::UPDATE_TYPES)) {
                 continue;
             }
             $storage = new PluginStorage($dirname);
