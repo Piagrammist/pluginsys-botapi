@@ -1,0 +1,28 @@
+{
+    "name": "piagrammist/pluginsys-botapi",
+    "description": "Plugin system for Telegram Bot API.",
+    "license": "AGPL-3.0-only",
+    "keywords": [
+        "telegram",
+        "telegram-bot-api",
+        "plugin-system"
+    ],
+    "authors": [
+        {
+            "name": "Reza Ataee",
+            "email": "Piagrammist@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "opis/closure": "^3.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "Piagrammist\\PluginSys\\BotAPI\\": "src"
+        },
+        "files": [
+            "src/functions.php"
+        ]
+    }
+}
