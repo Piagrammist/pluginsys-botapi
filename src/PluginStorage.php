@@ -66,4 +66,11 @@ class PluginStorage implements \Countable, \Stringable
     {
         return \iterator_to_array($this->container);
     }
+
+    public function executeAll(mixed ...$args): void
+    {
+        foreach ($this->container as $plugin) {
+            $plugin(...$args);
+        }
+    }
 }
