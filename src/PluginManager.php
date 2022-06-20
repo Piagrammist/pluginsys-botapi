@@ -39,7 +39,10 @@ class PluginManager
     {
         foreach (\glob(path($this->path, '*'), \GLOB_ONLYDIR | \GLOB_NOSORT) as $dir) {
             $dirname = \basename($dir);
-            if (!isset($this->updates[$dirname])) {
+            // do NOT use 'isset' here!
+            try {
+                $this->updates[$dirname];
+            } catch (\Throwable) {
                 continue;
             }
             $storage = new PluginStorage($dirname);
