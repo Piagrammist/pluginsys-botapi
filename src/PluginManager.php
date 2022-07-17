@@ -57,7 +57,7 @@ class PluginManager extends Storage
         }
     }
 
-    public function get(string $updateType): PluginStorage
+    public function get(string $updateType): ?PluginStorage
     {
         foreach ($this->container as $storage) {
             /** @var PluginStorage $storage */
@@ -65,6 +65,7 @@ class PluginManager extends Storage
                 return $storage;
             }
         }
-        throw new \Exception("Invalid update type provided");
+        #LOG: update type not found
+        return null;
     }
 }
